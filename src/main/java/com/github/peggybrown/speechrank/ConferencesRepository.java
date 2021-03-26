@@ -14,12 +14,16 @@ import java.util.stream.Collectors;
 @Log
 public class ConferencesRepository {
 
-    private Importer importer;
+    private final Importer importer;
     private List<Conference> conferences;
     private List<Year> years;
 
     ConferencesRepository(String apiKey) {
-        importer = new Importer(apiKey);
+        this(new Importer(apiKey));
+    }
+
+    ConferencesRepository(Importer importer) {
+        this.importer = importer;
         conferences = List.empty();
         initYears();
     }
@@ -41,13 +45,6 @@ public class ConferencesRepository {
 
     }
 
-    private void add(String year, Conference conf) {
-        log.info("Conference added: " + conf.toString());
-        conferences = conferences.append(conf);
-        years.filter(y -> y.getYear().equals(year))
-            .map(y -> y.addConference(conf));
-    }
-
     public java.util.List<Conference> getConferences() {
         return conferences.toJavaList();
     }
@@ -62,25 +59,38 @@ public class ConferencesRepository {
     }
 
     public void importAllConferences() {
-        add("2017", new Conference("11", "DevConf", importer.importDevConf2017().map(Presentation::new)));
-        add("2019", new Conference("12", "DevConf", importer.importDevConf2019().map(Presentation::new)));
-        add("2018", new Conference("21", "Boiling Frogs", importer.importBoilingFrogs2018().map(Presentation::new)));
-        add("2019", new Conference("31", "Boiling Frogs", importer.importBoilingFrogs2019().map(Presentation::new)));
-        add("2019", new Conference("41", "Scalar", importer.importScalar2019().map(Presentation::new)));
-        add("2018", new Conference("51", "Confitura", importer.importConfitura2018().map(Presentation::new)));
-        add("2019", new Conference("51", "Confitura", importer.importConfitura2019().map(Presentation::new)));
+        add("2017", new Conference("11", "DevConf",
+            importer.importFromYouTubePlaylist("PL8BUDiR2Y8Yu3SFzqhRWqDrF9OdejbeV0").map(Presentation::new)));
+        add("2019", new Conference("12", "DevConf",
+            importer.importFromYouTubePlaylist("PL8BUDiR2Y8Ys3DHzQhws4BZng8DjvEwib").map(Presentation::new)));
+        add("2018", new Conference("21", "Boiling Frogs",
+            importer.importFromYouTubePlaylist("PLVT0blg4rCWCEPTY20ZrZeGNQUD_2khrE").map(Presentation::new)));
+        add("2019", new Conference("31", "Boiling Frogs",
+            importer.importFromYouTubePlaylist("PLVT0blg4rCWCUv3oEMQ12haQkMQ1drefo").map(Presentation::new)));
+        add("2019", new Conference("41", "Scalar",
+            importer.importFromYouTubePlaylist("PL8NC5lCgGs6MYG0hR_ZOhQLvtoyThURka").map(Presentation::new)));
+        add("2018", new Conference("51", "Confitura",
+            importer.importFromYouTubePlaylist("PLVbNBx5Phg3DkJO00oMB2ETHFmG7RUujm").map(Presentation::new)));
+        add("2019", new Conference("51", "Confitura",
+            importer.importFromYouTubePlaylist("PLVbNBx5Phg3AwVti8rYNqx7965pgfMZWO").map(Presentation::new)));
+    }
 
+    public String importConference(ConferenceImportDto conf) {
+        String id = UUID.randomUUID().toString();
+        Conference conference = new Conference(id, conf.getName(),
+            importer.importFromYouTubePlaylist(conf.getPlaylistLink()).map(Presentation::new));
+        add(conf.getYear(), conference);
+        return id;
     }
 
     private void initYears() {
         years = List.of(new Year("2019"), new Year("2018"), new Year("2017"));
     }
 
-    public String importConference(ConferenceImportDto conf) {
-        String id = UUID.randomUUID().toString();
-        Conference conference = new Conference(id, conf.getName(), importer.importFromYouTubePlaylist(conf.getPlaylistLink()).map(Presentation::new));
-        add(conf.getYear(), conference);
-        return id;
+    private void add(String year, Conference conf) {
+        log.info("Conference added: " + conf.toString());
+        conferences = conferences.append(conf);
+        years.filter(y -> y.getYear().equals(year))
+            .map(y -> y.addConference(conf));
     }
-
 }

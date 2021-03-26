@@ -33,7 +33,7 @@ var paths = {
 
 // minify, concatenate libs
 // minify and concatenate scripts in default script directory
-gulp.task('scripts', function() {
+gulp.task('scripts', gulp.series(function(done) {
     gulp.src(paths.libs, {cwd: bases.application})
         .pipe(uglify())
         .pipe(concat('libs.min.js'))
@@ -45,44 +45,48 @@ gulp.task('scripts', function() {
         //.pipe(uglify())
         .pipe(concat('app.min.js'))
         .pipe(gulp.dest(bases.production + 'scripts/'));
-});
+    done();
+}));
 
 // convert less to css remove comments, minify and concatenate css styles, copy css file to production
-gulp.task('styles', function() {
+gulp.task('styles', gulp.series(function() {
     return gulp.src(paths.less, {cwd: bases.application})
         .pipe(less())
         .pipe(stripCssComments({all:true}))
         .pipe(concat('styles.css'))
         .pipe(minifyCss())
         .pipe(gulp.dest(bases.production + 'css/'));
-});
+}));
 
 // copy all other files to production directly
-gulp.task('copy', function() {
+gulp.task('copy', gulp.series(function(done) {
     // Copy html
-    gulp.src(paths.html, {cwd: bases.application})
+    gulp.src(paths.html, {cwd: bases.application, allowEmpty: true})
         .pipe(gulp.dest(bases.production));
 
     // Copy extra html files
-    gulp.src(paths.extras, {cwd: bases.application})
+    gulp.src(paths.extras, {cwd: bases.application, allowEmpty: true })
         .pipe(gulp.dest(bases.production));
 
-    gulp.src(paths.images, {cwd: bases.application})
+    gulp.src(paths.images, {cwd: bases.application, allowEmpty: true })
         .pipe(gulp.dest(bases.production + 'images/'));
 
     // Copy templates
-    gulp.src(paths.templates, {cwd: bases.application})
+    gulp.src(paths.templates, {cwd: bases.application, allowEmpty: true })
         .pipe(gulp.dest(bases.production + 'templates/'));
 
     // Copy fonts
-	gulp.src(paths.fonts, {cwd: bases.application})
+	gulp.src(paths.fonts, {cwd: bases.application, allowEmpty: true })
 		.pipe(gulp.dest(bases.production + 'fonts/'));
-});
+	done();
+}));
 
-gulp.task('watchForChanges', function() {
-    gulp.watch(bases.application + paths.less, ['styles']);
-    gulp.watch(bases.application + 'scripts/**/*.js', ['scripts']);
-    gulp.watch(bases.application + '**/*.html', ['copy']);
-});
+gulp.task('watchForChanges', gulp.series(function() {
+    gulp.watch(bases.application + paths.less, gulp.series('styles'));
+    gulp.watch(bases.application + 'scripts/**/*.js', gulp.series('scripts'));
+    gulp.watch(bases.application + '**/*.html', gulp.series('copy'));
+}));
 
-gulp.task('default', ['scripts', 'styles', 'copy', 'watchForChanges']);
+gulp.task('default', gulp.series('scripts','styles', 'copy', 'watchForChanges', function(done) {
+    done();
+}));

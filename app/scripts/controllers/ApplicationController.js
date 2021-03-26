@@ -4,7 +4,7 @@
     angular.module('speechRank').controller('ApplicationController', function( $scope ) {
         console.log('ApplicationController loaded..');
 	    $scope.user = {
-		    username: 'Ola Kunysz',
+		    username: 'Ewa',
 		    userId: 123
 	    };
     });

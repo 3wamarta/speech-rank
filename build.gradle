@@ -17,21 +17,31 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testImplementation('org.junit.jupiter:junit-jupiter')
     compile "com.javaslang:javaslang:2.0.0-RC4"
     compile 'com.google.api-client:google-api-client:1.21.0'
     compile 'com.google.apis:google-api-services-youtube:v3-rev182-1.22.0'
     compile 'org.slf4j:slf4j-api:1.7.30'
-    compileOnly 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
+    compile 'javax.activation:activation:1.1'
+    compileOnly 'org.projectlombok:lombok:1.18.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
     compile group: 'com.typesafe', name: 'config', version: '1.4.0'
     testCompile 'org.slf4j:slf4j-simple:1.7.30'
-    testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.6.2'
     testCompile ('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: "groovy-all"
     }
-    implementation 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.10.19'
 
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 mainClassName = "com.github.peggybrown.speechrank.Main"

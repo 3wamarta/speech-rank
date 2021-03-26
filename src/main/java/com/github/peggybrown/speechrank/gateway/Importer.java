@@ -26,7 +26,7 @@ public class Importer {
      * Define a global instance of a Youtube object, which will be used
      * to make YouTube Data API requests.
      */
-    private static YouTube youtube;
+    private YouTube youtube;
 
     /**
      * Define a global instance of the HTTP transport.
@@ -39,20 +39,22 @@ public class Importer {
     public static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     public Importer(String apiKey) {
-        this.apiKey = apiKey;
+        // This object is used to make YouTube Data API requests. The last
+        // argument is required, but since we don't need anything
+        // initialized when the HttpRequest is initialized, we override
+        // the interface and provide a no-op function.
+        this(apiKey, new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, request -> {
+            }).setApplicationName("Speech Rank").build());
     }
 
+    public Importer(String apiKey, YouTube youTube) {
+        this.apiKey = apiKey;
+        this.youtube = youTube;
+    }
 
     public javaslang.collection.List<VideoData> importFromYouTubePlaylist(String playlistId) {
         javaslang.collection.List<VideoData> videos = javaslang.collection.List.empty();
         try {
-            // This object is used to make YouTube Data API requests. The last
-            // argument is required, but since we don't need anything
-            // initialized when the HttpRequest is initialized, we override
-            // the interface and provide a no-op function.
-            youtube = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, request -> {
-            }).setApplicationName("Speech Rank").build();
-
             // Define the API request for retrieving search results.
             YouTube.PlaylistItems.List playlistitems = youtube.playlistItems().list("contentDetails,snippet");
 
@@ -80,34 +82,6 @@ public class Importer {
         }
         return videos;
 
-    }
-
-    public javaslang.collection.List<VideoData> importConfitura2019() {
-        return importFromYouTubePlaylist("PLVbNBx5Phg3AwVti8rYNqx7965pgfMZWO");
-    }
-
-    public javaslang.collection.List<VideoData> importConfitura2018() {
-        return importFromYouTubePlaylist("PLVbNBx5Phg3DkJO00oMB2ETHFmG7RUujm");
-    }
-
-    public javaslang.collection.List<VideoData> importBoilingFrogs2019() {
-        return importFromYouTubePlaylist("PLVT0blg4rCWCUv3oEMQ12haQkMQ1drefo");
-    }
-
-    public javaslang.collection.List<VideoData> importBoilingFrogs2018() {
-        return importFromYouTubePlaylist("PLVT0blg4rCWCEPTY20ZrZeGNQUD_2khrE");
-    }
-
-    public javaslang.collection.List<VideoData> importScalar2019() {
-        return importFromYouTubePlaylist("PL8NC5lCgGs6MYG0hR_ZOhQLvtoyThURka");
-    }
-
-    public javaslang.collection.List<VideoData> importDevConf2019() {
-        return importFromYouTubePlaylist("PL8BUDiR2Y8Ys3DHzQhws4BZng8DjvEwib");
-    }
-
-    public javaslang.collection.List<VideoData> importDevConf2017() {
-        return importFromYouTubePlaylist("PL8BUDiR2Y8Yu3SFzqhRWqDrF9OdejbeV0");
     }
 
     @Data
